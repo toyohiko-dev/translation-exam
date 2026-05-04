@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>通訳練習</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="hero-card">
+        <p class="eyebrow">耳で聞いて訳す練習</p>
+        <h1>通訳練習</h1>
+        <p class="intro">
+          日本語を聞いて、内容を覚えたまま英訳する練習用アプリです。読み上げが終わると60秒の回答時間が始まり、終了後に読み上げた日本文を確認できます。
+        </p>
+      </section>
+
+      <section class="panel controls-panel">
+        <div class="panel-heading">
+          <h2>問題データ</h2>
+          <p id="datasetStatus" class="muted">初期CSVを読み込んでいます...</p>
+        </div>
+
+        <p class="guide-text">
+          初期状態では200問の問題が登録されています。<br />
+          自分で作成したCSVを読み込んで、好きな問題で練習することもできます。
+        </p>
+
+        <div class="upload-row">
+          <label class="file-picker" for="csvFileInput">
+            <span>CSVを読み込む</span>
+            <input id="csvFileInput" type="file" accept=".csv,text/csv" />
+          </label>
+          <button id="reloadBundledButton" class="secondary-button" type="button">
+            初期CSVに戻す
+          </button>
+        </div>
+
+        <div class="format-note">
+          <p class="format-title">CSVの基本形式</p>
+          <p class="format-code"><code>title,japanese</code></p>
+          <p class="hint">表示例</p>
+          <pre class="csv-sample"><code>title,japanese
+里山,日本の里山は、人々の暮らしと自然が長い時間をかけて共存してきた地域です。かつては薪や落ち葉を利用することで森林が管理され、多様な動植物の生息環境が保たれてきました。
+オーバーツーリズム,近年、観光客の急増により、一部の地域では交通混雑やごみ問題、住民生活への影響が深刻化しています。観光による経済効果を保ちながら、地域の暮らしを守る仕組みが求められています。</code></pre>
+          <p class="hint">※`title,japanese` を基本形式として作成してください。</p>
+          <p class="hint">※japanese の推奨文字数は80〜220文字程度、最大目安は300文字程度です。</p>
+        </div>
+      </section>
+
+      <section class="panel practice-panel">
+        <div class="panel-heading">
+          <div class="practice-heading-copy">
+            <h2>練習</h2>
+            <div class="progress-controls">
+              <p id="progressSummary" class="progress-summary">進捗：0 / 0（残り0問）</p>
+              <button id="resetProgressButton" class="secondary-button secondary-button-small" type="button" disabled>
+                進捗をリセット
+              </button>
+            </div>
+            <p class="progress-note">※前の問題に戻っても進捗は減りません</p>
+          </div>
+          <p id="phaseLabel" class="phase-pill" data-phase="idle">準備完了</p>
+        </div>
+
+        <div class="usage-note">
+          <p>① 出題開始を押すと、日本文が音声で読み上げられます</p>
+          <p>② 読み上げが終わると、右側のカウントダウンが始まります</p>
+          <p>③ カウントダウン中に、内容を思い出しながら英訳してください</p>
+          <p>④ カウントが0になると、下に読み上げた日本文が表示されます</p>
+        </div>
+
+        <div class="practice-layout">
+          <div class="prompt-card">
+            <p class="card-label">問題</p>
+            <h3 id="promptTitle" class="prompt-title">準備ができたら出題開始を押してください。</h3>
+            <p id="promptMeta" class="prompt-meta">読み上げた日本文は、回答時間が終わるまで表示されません。</p>
+          </div>
+
+          <div class="timer-card">
+            <p class="card-label">残り時間</p>
+            <div id="timerDisplay" class="timer-display">60</div>
+            <p id="timerCaption" class="timer-caption">読み上げが終わると、カウントダウンが始まります。</p>
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button id="startButton" class="primary-button" type="button" disabled>
+            出題開始
+          </button>
+          <button id="sameTopicButton" class="secondary-button" type="button" disabled>
+            同じ問題をもう一度
+          </button>
+          <button id="previousTopicButton" class="secondary-button" type="button" disabled>
+            前の問題
+          </button>
+          <button id="pauseButton" class="secondary-button" type="button" disabled>
+            一時停止
+          </button>
+          <button id="resumeButton" class="secondary-button" type="button" disabled>
+            再開
+          </button>
+        </div>
+
+        <div id="messageBanner" class="message-banner" hidden></div>
+      </section>
+
+      <section class="panel reveal-panel">
+        <div class="panel-heading">
+          <h2>読み上げ文の確認</h2>
+          <p class="muted">回答時間が終わるまで表示されません</p>
+        </div>
+
+        <div id="revealCard" class="reveal-card reveal-hidden">
+          <p class="card-label">読み上げた日本文</p>
+          <p id="revealedJapanese" class="revealed-japanese"></p>
+        </div>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
