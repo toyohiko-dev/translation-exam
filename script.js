@@ -8,6 +8,7 @@ const elements = {
   reloadBundledButton: document.getElementById("reloadBundledButton"),
   resetProgressButton: document.getElementById("resetProgressButton"),
   datasetStatus: document.getElementById("datasetStatus"),
+  initialDatasetCount: document.getElementById("initialDatasetCount"),
   progressSummary: document.getElementById("progressSummary"),
   phaseLabel: document.getElementById("phaseLabel"),
   promptTitle: document.getElementById("promptTitle"),
@@ -21,6 +22,9 @@ const elements = {
   previousTopicButton: document.getElementById("previousTopicButton"),
   revealCard: document.getElementById("revealCard"),
   revealedJapanese: document.getElementById("revealedJapanese"),
+  copyJapaneseButton: document.getElementById("copyJapaneseButton"),
+  openGoogleTranslateButton: document.getElementById("openGoogleTranslateButton"),
+  revealActionStatus: document.getElementById("revealActionStatus"),
   messageBanner: document.getElementById("messageBanner"),
 };
 
@@ -98,18 +102,43 @@ function setDatasetStatus(message) {
   elements.datasetStatus.textContent = message;
 }
 
+function setInitialDatasetCount(count) {
+  elements.initialDatasetCount.textContent = String(count);
+}
+
 function setTimer(secondsRemaining) {
   elements.timerDisplay.textContent = String(Math.max(0, secondsRemaining)).padStart(2, "0");
+}
+
+function setRevealActionStatus(message) {
+  elements.revealActionStatus.textContent = message || "";
+}
+
+function updateRevealActions() {
+  const hasRevealedText =
+    appState.phase === "finished" && Boolean(elements.revealedJapanese.textContent.trim());
+
+  elements.copyJapaneseButton.disabled = !hasRevealedText;
+  elements.openGoogleTranslateButton.disabled = !hasRevealedText;
+  elements.copyJapaneseButton.classList.toggle("button-active", !elements.copyJapaneseButton.disabled);
+  elements.openGoogleTranslateButton.classList.toggle(
+    "button-active",
+    !elements.openGoogleTranslateButton.disabled
+  );
 }
 
 function resetReveal() {
   elements.revealedJapanese.textContent = "";
   elements.revealCard.classList.add("reveal-hidden");
+  setRevealActionStatus("");
+  updateRevealActions();
 }
 
 function showReveal(textJa) {
   elements.revealedJapanese.textContent = textJa;
   elements.revealCard.classList.remove("reveal-hidden");
+  setRevealActionStatus("");
+  updateRevealActions();
 }
 
 function clearInfoMessage() {
@@ -220,10 +249,8 @@ function updateControlAvailability() {
   );
   elements.pauseButton.classList.toggle("button-active", !elements.pauseButton.disabled);
   elements.resumeButton.classList.toggle("button-active", !elements.resumeButton.disabled);
-  elements.resetProgressButton.classList.toggle(
-    "button-active",
-    !elements.resetProgressButton.disabled
-  );
+  elements.resetProgressButton.classList.remove("button-active");
+  updateRevealActions();
 }
 
 function updatePromptSummary(prompt) {
@@ -611,6 +638,31 @@ function resetProgress() {
   refreshMessageBanner();
 }
 
+async function copyRevealedJapanese() {
+  const text = elements.revealedJapanese.textContent.trim();
+  if (!text || elements.copyJapaneseButton.disabled) {
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(text);
+    setRevealActionStatus("日本文をコピーしました。");
+  } catch {
+    setRevealActionStatus("コピーに失敗しました。");
+  }
+}
+
+function openGoogleTranslate() {
+  const text = elements.revealedJapanese.textContent.trim();
+  if (!text || elements.openGoogleTranslateButton.disabled) {
+    return;
+  }
+
+  const url = `https://translate.google.com/?sl=ja&tl=en&text=${encodeURIComponent(text)}&op=translate`;
+  window.open(url, "_blank", "noopener,noreferrer");
+  setRevealActionStatus("Google翻訳を新しいタブで開きました。");
+}
+
 async function loadPromptsFromCsvText(csvText, sourceLabel, options = {}) {
   const prompts = parseCsv(csvText);
   const lengthWarning = buildLengthWarning(prompts);
@@ -631,6 +683,9 @@ async function loadPromptsFromCsvText(csvText, sourceLabel, options = {}) {
   updateProgressSummary();
   setPhase("idle");
   setDatasetStatus(`${sourceLabel}を読み込みました。${prompts.length}問使えます。`);
+  if (persistProgress) {
+    setInitialDatasetCount(prompts.length);
+  }
   refreshMessageBanner();
 
   if (!hasRemainingPrompts()) {
@@ -715,6 +770,8 @@ function initializeApp() {
   elements.reloadBundledButton.addEventListener("click", loadBundledCsv);
   elements.resetProgressButton.addEventListener("click", resetProgress);
   elements.csvFileInput.addEventListener("change", handleCustomCsvSelection);
+  elements.copyJapaneseButton.addEventListener("click", copyRevealedJapanese);
+  elements.openGoogleTranslateButton.addEventListener("click", openGoogleTranslate);
 
   loadBundledCsv();
 }

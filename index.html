@@ -23,12 +23,14 @@
         </div>
 
         <p class="guide-text">
-          初期状態では200問の問題が登録されています。<br />
-          自分で作成したCSVを読み込んで、好きな問題で練習することもできます。
+          初期状態では<span id="initialDatasetCount">0</span>問の問題が使えます。<br />
+          自分で作成したCSVを読み込んで、好きな問題で練習することもできます。<br />
+          読み込んだCSVはこのブラウザ内でのみ使用されます。<br />
+          ページを再読み込みすると初期問題に戻ります。
         </p>
 
         <div class="upload-row">
-          <label class="file-picker" for="csvFileInput">
+          <label class="file-picker primary-action" for="csvFileInput">
             <span>CSVを読み込む</span>
             <input id="csvFileInput" type="file" accept=".csv,text/csv" />
           </label>
@@ -66,7 +68,7 @@
 
         <div class="usage-note">
           <p>① 出題開始を押すと、日本文が音声で読み上げられます</p>
-          <p>② 読み上げが終わると、右側のカウントダウンが始まります</p>
+          <p>② 読み上げが終わると、カウントダウンが始まります</p>
           <p>③ カウントダウン中に、内容を思い出しながら英訳してください</p>
           <p>④ カウントが0になると、下に読み上げた日本文が表示されます</p>
         </div>
@@ -89,16 +91,16 @@
           <button id="startButton" class="primary-button" type="button" disabled>
             出題開始
           </button>
-          <button id="sameTopicButton" class="secondary-button" type="button" disabled>
+          <button id="sameTopicButton" class="primary-button" type="button" disabled>
             同じ問題をもう一度
           </button>
-          <button id="previousTopicButton" class="secondary-button" type="button" disabled>
+          <button id="previousTopicButton" class="primary-button" type="button" disabled>
             前の問題
           </button>
-          <button id="pauseButton" class="secondary-button" type="button" disabled>
+          <button id="pauseButton" class="primary-button" type="button" disabled>
             一時停止
           </button>
-          <button id="resumeButton" class="secondary-button" type="button" disabled>
+          <button id="resumeButton" class="primary-button" type="button" disabled>
             再開
           </button>
         </div>
@@ -116,6 +118,20 @@
           <p class="card-label">読み上げた日本文</p>
           <p id="revealedJapanese" class="revealed-japanese"></p>
         </div>
+
+        <div class="reveal-actions">
+          <button id="copyJapaneseButton" class="secondary-button secondary-button-small" type="button" disabled>
+            コピーする
+          </button>
+          <button id="openGoogleTranslateButton" class="secondary-button secondary-button-small" type="button" disabled>
+            Google翻訳で開く
+          </button>
+        </div>
+
+        <p class="reveal-helper">
+          参考訳はGoogle翻訳による英文例です。実際の通訳では、意味が伝われば別の表現でも問題ありません。
+        </p>
+        <p id="revealActionStatus" class="reveal-action-status" aria-live="polite"></p>
       </section>
     </main>
 
