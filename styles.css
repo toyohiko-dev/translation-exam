@@ -63,7 +63,7 @@ body {
 .prompt-meta,
 .progress-summary,
 .progress-note,
-.reveal-helper,
+.reveal-action-note,
 .reveal-action-status {
   color: var(--muted);
 }
@@ -388,6 +388,11 @@ h1 {
 
 .reveal-actions {
   margin-top: 16px;
+}
+
+.reveal-action-note {
+  margin-top: 10px;
+  line-height: 1.6;
 }
 
 .answer-english-section {

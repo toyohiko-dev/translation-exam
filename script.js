@@ -679,15 +679,27 @@ function resetProgress() {
   refreshMessageBanner();
 }
 
-function openGoogleTranslate() {
-  const text = elements.revealedJapanese.textContent.trim();
+async function openGoogleTranslate() {
+  const text =
+    appState.currentPrompt?.textJa?.trim() || elements.revealedJapanese.textContent.trim();
   if (!text || elements.openGoogleTranslateButton.disabled) {
     return;
   }
 
-  const url = `https://translate.google.com/?sl=ja&tl=en&text=${encodeURIComponent(text)}&op=translate`;
-  window.open(url, "_blank", "noopener,noreferrer");
-  setRevealActionStatus("Google翻訳を新しいタブで開きました。");
+  const translateUrl = `https://translate.google.com/?sl=ja&tl=en&text=${encodeURIComponent(
+    text
+  )}&op=translate`;
+
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (error) {
+      console.warn("Failed to copy text before opening Google Translate.", error);
+    }
+  }
+
+  console.log("translateUrl", translateUrl);
+  window.open(translateUrl, "_blank", "noopener,noreferrer");
 }
 
 async function loadPromptsFromCsvText(csvText, sourceLabel, options = {}) {
