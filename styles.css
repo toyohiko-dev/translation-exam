@@ -92,8 +92,10 @@ h1 {
 
 .intro {
   margin-top: 16px;
-  max-width: 60ch;
-  line-height: 1.6;
+  max-width: 640px;
+  line-height: 1.7;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 .guide-text,
@@ -254,7 +256,8 @@ h1 {
 .prompt-card,
 .timer-card,
 .reveal-card,
-.format-note {
+.format-note,
+.answer-english-card {
   background: var(--surface-strong);
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
@@ -273,8 +276,7 @@ h1 {
 .csv-sample {
   margin: 8px 0 10px;
   overflow-x: auto;
-  white-space: pre-wrap;
-  word-break: break-word;
+  white-space: pre;
   background: rgba(28, 23, 18, 0.03);
   border-radius: 12px;
   padding: 12px;
@@ -355,19 +357,26 @@ h1 {
 
 .reveal-card {
   min-height: 120px;
+  display: flex;
+  flex-direction: column;
 }
 
 .reveal-hidden {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   color: var(--muted);
 }
 
 .reveal-hidden::after {
   content: "カウントダウン終了後、読み上げた日本文をここに表示します";
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   line-height: 1.6;
+}
+
+.reveal-hidden .revealed-japanese {
+  display: none;
 }
 
 .revealed-japanese {
@@ -381,9 +390,13 @@ h1 {
   margin-top: 16px;
 }
 
-.reveal-helper {
-  margin-top: 14px;
-  line-height: 1.6;
+.answer-english-section {
+  margin-top: 16px;
+}
+
+.answer-english-text {
+  line-height: 1.8;
+  white-space: pre-wrap;
 }
 
 .reveal-action-status {

@@ -25,7 +25,6 @@
         <p class="guide-text">
           初期状態では<span id="initialDatasetCount">0</span>問の問題が使えます。<br />
           自分で作成したCSVを読み込んで、好きな問題で練習することもできます。<br />
-          読み込んだCSVはこのブラウザ内でのみ使用されます。<br />
           ページを再読み込みすると初期問題に戻ります。
         </p>
 
@@ -41,13 +40,13 @@
 
         <div class="format-note">
           <p class="format-title">CSVの基本形式</p>
-          <p class="format-code"><code>title,japanese</code></p>
-          <p class="hint">表示例</p>
-          <pre class="csv-sample"><code>title,japanese
-里山,日本の里山は、人々の暮らしと自然が長い時間をかけて共存してきた地域です。かつては薪や落ち葉を利用することで森林が管理され、多様な動植物の生息環境が保たれてきました。
-オーバーツーリズム,近年、観光客の急増により、一部の地域では交通混雑やごみ問題、住民生活への影響が深刻化しています。観光による経済効果を保ちながら、地域の暮らしを守る仕組みが求められています。</code></pre>
-          <p class="hint">※`title,japanese` を基本形式として作成してください。</p>
-          <p class="hint">※japanese の推奨文字数は80〜220文字程度、最大目安は300文字程度です。</p>
+          <p class="format-code"><code>title,japanese,answer_english</code></p>
+          <p class="hint">※`answer_english` は任意です。模範英文を入れておくと、回答後に教材として用意した英文を確認できます。空欄の場合はGoogle翻訳で確認できます。</p>
+          <p class="hint">※japanese の推奨文字数は80〜220文字程度（最大300文字程度）です。</p>
+          <p class="hint">サンプルCSV</p>
+          <pre class="csv-sample"><code>title,japanese,answer_english
+京都,京都は日本の伝統文化が色濃く残る都市です。,Kyoto is a city where traditional Japanese culture remains strongly preserved.</code></pre>
+          <p class="hint"><a href="data/sample_interpreter_practice.csv" download>サンプルCSVをダウンロード</a></p>
         </div>
       </section>
 
@@ -120,17 +119,20 @@
         </div>
 
         <div class="reveal-actions">
-          <button id="copyJapaneseButton" class="secondary-button secondary-button-small" type="button" disabled>
-            コピーする
+          <button id="showAnswerEnglishButton" class="secondary-button secondary-button-small" type="button" disabled>
+            模範英文を見る
           </button>
           <button id="openGoogleTranslateButton" class="secondary-button secondary-button-small" type="button" disabled>
-            Google翻訳で開く
+            Google翻訳で確認
           </button>
         </div>
 
-        <p class="reveal-helper">
-          参考訳はGoogle翻訳による英文例です。実際の通訳では、意味が伝われば別の表現でも問題ありません。
-        </p>
+        <div id="answerEnglishSection" class="answer-english-section" hidden>
+          <p class="card-label">模範英文</p>
+          <div class="answer-english-card">
+            <p id="answerEnglishText" class="answer-english-text"></p>
+          </div>
+        </div>
         <p id="revealActionStatus" class="reveal-action-status" aria-live="polite"></p>
       </section>
     </main>

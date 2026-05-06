@@ -1,4 +1,4 @@
-const BUNDLED_CSV_PATH = "data/interpreter_practice_200_questions.csv";
+const BUNDLED_CSV_PATH = "data/interpreter_practice_questions.csv";
 const ANSWER_DURATION_SECONDS = 60;
 const SOFT_TEXT_LIMIT = 300;
 const BUNDLED_PROGRESS_STORAGE_KEY = "translation-exam:bundled-progress:v1";
@@ -22,8 +22,10 @@ const elements = {
   previousTopicButton: document.getElementById("previousTopicButton"),
   revealCard: document.getElementById("revealCard"),
   revealedJapanese: document.getElementById("revealedJapanese"),
-  copyJapaneseButton: document.getElementById("copyJapaneseButton"),
+  showAnswerEnglishButton: document.getElementById("showAnswerEnglishButton"),
   openGoogleTranslateButton: document.getElementById("openGoogleTranslateButton"),
+  answerEnglishSection: document.getElementById("answerEnglishSection"),
+  answerEnglishText: document.getElementById("answerEnglishText"),
   revealActionStatus: document.getElementById("revealActionStatus"),
   messageBanner: document.getElementById("messageBanner"),
 };
@@ -45,6 +47,7 @@ const appState = {
   persistProgress: false,
   lengthWarningMessage: "",
   infoMessage: "",
+  answerEnglishVisible: false,
 };
 
 function setPhase(phase) {
@@ -117,19 +120,31 @@ function setRevealActionStatus(message) {
 function updateRevealActions() {
   const hasRevealedText =
     appState.phase === "finished" && Boolean(elements.revealedJapanese.textContent.trim());
+  const hasAnswerEnglish =
+    appState.phase === "finished" && Boolean(appState.currentPrompt?.answerEnglish?.trim());
 
-  elements.copyJapaneseButton.disabled = !hasRevealedText;
   elements.openGoogleTranslateButton.disabled = !hasRevealedText;
-  elements.copyJapaneseButton.classList.toggle("button-active", !elements.copyJapaneseButton.disabled);
+  elements.showAnswerEnglishButton.disabled = !hasAnswerEnglish;
+  elements.showAnswerEnglishButton.classList.toggle(
+    "button-active",
+    hasAnswerEnglish
+  );
   elements.openGoogleTranslateButton.classList.toggle(
     "button-active",
     !elements.openGoogleTranslateButton.disabled
   );
 }
 
+function resetAnswerEnglish() {
+  appState.answerEnglishVisible = false;
+  elements.answerEnglishText.textContent = "";
+  elements.answerEnglishSection.hidden = true;
+}
+
 function resetReveal() {
   elements.revealedJapanese.textContent = "";
   elements.revealCard.classList.add("reveal-hidden");
+  resetAnswerEnglish();
   setRevealActionStatus("");
   updateRevealActions();
 }
@@ -137,7 +152,26 @@ function resetReveal() {
 function showReveal(textJa) {
   elements.revealedJapanese.textContent = textJa;
   elements.revealCard.classList.remove("reveal-hidden");
+  resetAnswerEnglish();
   setRevealActionStatus("");
+  updateRevealActions();
+}
+
+function showAnswerEnglish() {
+  const answerEnglish = appState.currentPrompt?.answerEnglish?.trim();
+  if (!answerEnglish || appState.phase !== "finished") {
+    return;
+  }
+
+  if (appState.answerEnglishVisible) {
+    resetAnswerEnglish();
+    updateRevealActions();
+    return;
+  }
+
+  appState.answerEnglishVisible = true;
+  elements.answerEnglishText.textContent = answerEnglish;
+  elements.answerEnglishSection.hidden = false;
   updateRevealActions();
 }
 
@@ -279,6 +313,7 @@ function pickNextUnseenPrompt() {
 
 function normalizeHeader(value) {
   return String(value || "")
+    .replace(/^\uFEFF/, "")
     .trim()
     .toLowerCase();
 }
@@ -348,6 +383,9 @@ function parseCsv(csvText) {
     : 0;
   const titleIndex = hasHeader ? headers.findIndex((header) => header === "title") : -1;
   const idIndex = hasHeader ? headers.findIndex((header) => header === "id") : -1;
+  const answerEnglishIndex = hasHeader
+    ? headers.findIndex((header) => header === "answer_english")
+    : -1;
 
   const prompts = dataRows
     .map((columns, rowIndex) => {
@@ -358,11 +396,14 @@ function parseCsv(csvText) {
 
       const rawTitle = titleIndex >= 0 ? String(columns[titleIndex] || "").trim() : "";
       const rawId = idIndex >= 0 ? String(columns[idIndex] || "").trim() : "";
+      const answerEnglish =
+        answerEnglishIndex >= 0 ? String(columns[answerEnglishIndex] || "").trim() : "";
 
       return {
         id: rawId || `row-${rowIndex + 1}`,
         title: rawTitle || `問題${rowIndex + 1}`,
         textJa,
+        answerEnglish,
       };
     })
     .filter(Boolean);
@@ -638,20 +679,6 @@ function resetProgress() {
   refreshMessageBanner();
 }
 
-async function copyRevealedJapanese() {
-  const text = elements.revealedJapanese.textContent.trim();
-  if (!text || elements.copyJapaneseButton.disabled) {
-    return;
-  }
-
-  try {
-    await navigator.clipboard.writeText(text);
-    setRevealActionStatus("日本文をコピーしました。");
-  } catch {
-    setRevealActionStatus("コピーに失敗しました。");
-  }
-}
-
 function openGoogleTranslate() {
   const text = elements.revealedJapanese.textContent.trim();
   if (!text || elements.openGoogleTranslateButton.disabled) {
@@ -770,7 +797,7 @@ function initializeApp() {
   elements.reloadBundledButton.addEventListener("click", loadBundledCsv);
   elements.resetProgressButton.addEventListener("click", resetProgress);
   elements.csvFileInput.addEventListener("change", handleCustomCsvSelection);
-  elements.copyJapaneseButton.addEventListener("click", copyRevealedJapanese);
+  elements.showAnswerEnglishButton.addEventListener("click", showAnswerEnglish);
   elements.openGoogleTranslateButton.addEventListener("click", openGoogleTranslate);
 
   loadBundledCsv();

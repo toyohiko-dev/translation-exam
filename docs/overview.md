@@ -1,52 +1,33 @@
-# Overview
+# 概要
 
-## What this app is
+## このアプリの目的
 
-This project is a personal web app for interpretation practice. Its core training value is to simulate the pressure of hearing a Japanese sentence once, then immediately producing an English interpretation without relying on reading.
+このアプリは、逐次通訳の練習を個人で繰り返し行うための静的Webアプリです。
+重要なのは、日本文を目で追って訳すことではなく、音声で一度聞いた内容を保持しながら英訳する負荷を再現することです。
 
-The app reads practice material from CSV, chooses a sentence at random, speaks it aloud in Japanese, waits until playback is complete, starts a 60-second answering window, and then reveals the original Japanese sentence after time is up.
+## 体験の中心
 
-## Why this exists
+- 日本語を先に読ませず、耳で聞かせる
+- 聞き終わった直後に時間制限つきで英訳する
+- 練習後に読み上げた日本文を確認する
+- 必要に応じて教材側で用意した模範英文や補助確認手段を使う
 
-In interpretation practice, it is not enough to quietly read a prompt and translate it. The important load comes from:
+## 想定ユーザー
 
-- listening in real time
-- retaining meaning in short-term memory
-- producing an English response under time pressure
+- 個人で通訳練習を行いたい利用者
+- PCまたはスマートフォンのブラウザで練習したい利用者
 
-This MVP is intentionally narrow so the core exercise loop can be used quickly and repeatedly.
+## 用語
 
-## Target user
+- 問題データ: 練習用の日本文をまとめたCSV
+- 読み上げ: 日本文を音声で再生すること
+- 回答時間: 読み上げ終了後の制限時間
+- 読み上げ文の確認: 回答時間終了後に、実際に読み上げた日本文を確認すること
+- 模範英文: CSVに任意で登録された教材用の英文
 
-- Primary user: the repository owner
-- Usage style: solo practice on desktop or mobile browser
-- Environment: modern browser with Japanese speech synthesis support preferred
+## プロダクト方針
 
-## Core user flow
-
-1. Open the app.
-2. Load the default CSV or import a custom CSV.
-3. Start a practice round.
-4. Hear one randomly selected Japanese sentence.
-5. After playback finishes, use the 60-second countdown to interpret aloud.
-6. When the timer ends, view the original Japanese sentence.
-7. Start the next round.
-
-## Product principles
-
-- Listening first: the Japanese sentence should not be visible before answer time ends.
-- Fast repetition: starting the next round should require minimal effort.
-- Simple operation: one person should be able to use it without setup beyond opening the app and optionally loading a CSV.
-- Local-first MVP: no accounts, cloud sync, or backend dependency.
-
-## Assumed content model
-
-For MVP, each CSV row contains one Japanese sentence to be spoken. Additional columns may be tolerated later, but the initial design should only require a single Japanese text field.
-
-## Success criteria for MVP
-
-- The app can load practice data from CSV.
-- A bundled initial CSV is available so the app works immediately.
-- A random Japanese sentence is spoken successfully.
-- The 60-second countdown begins only after speech playback finishes.
-- The original Japanese sentence is revealed only after the countdown ends.
+- 聞いて訳す体験を優先する
+- 操作は少なく、迷わず使えるようにする
+- ローカルで完結する軽い構成を保つ
+- 練習の正解を一つに固定しすぎず、確認手段は補助として扱う

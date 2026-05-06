@@ -1,136 +1,162 @@
-# MVP Specification
+# 仕様
 
-## 1. Scope
+## このドキュメントの役割
 
-This document defines the minimum viable product for the interpretation practice app. It covers only the single-round training loop and CSV-based content loading.
+このファイルは、本アプリの仕様の正本です。
+CSV仕様、UIの表示条件、結果確認の仕様はこのファイルを基準にします。
 
-## 2. In Scope
+## 1. 対象範囲
 
-- Load a bundled initial CSV file on first use
-- Load a user-selected CSV file from local device storage
-- Parse Japanese prompts from CSV
-- Select one prompt at random for each round
-- Read the selected Japanese prompt aloud using browser speech synthesis
-- Start a 60-second countdown after speech playback completes
-- Reveal the Japanese prompt after countdown completion
-- Allow the user to start another round
+- 初期CSVの読み込み
+- カスタムCSVの読み込み
+- 日本文の読み上げ
+- 回答時間のカウントダウン
+- 回答後の結果確認
+- 進捗管理
 
-## 3. Out of Scope
+## 2. 対象外
 
-- Audio recording
-- Speech recognition
-- Transcript generation
-- AI feedback or scoring
-- User accounts
-- Remote database or backend storage
-- Supabase integration
-- Practice history analytics
-- Difficulty settings
-- Multi-language prompt management beyond Japanese source text
+- 録音
+- 音声認識
+- 文字起こし
+- AI採点
+- Supabase
+- ログイン
+- DB保存
 
-## 4. Functional Requirements
+## 3. CSV仕様
 
-### 4.1 CSV loading
+### 3.1 基本方針
 
-- The app must support an initial bundled CSV so the app is usable immediately after opening.
-- The app must allow the user to load a CSV file from the local device.
-- When a custom CSV is loaded successfully, the app should use that dataset for subsequent rounds during the current session.
-- The app should validate that at least one usable Japanese sentence exists.
-- Empty rows must be ignored.
+- 必須列は `japanese` のみ
+- 既存CSVとの後方互換性を保つ
+- 任意列が空でも読み込みを壊さない
 
-### 4.2 CSV format
+### 3.2 想定する列
 
-The app should support the following structure:
+- 必須列
+  - `japanese`
+- 任意列
+  - `id`
+  - `title`
+  - `answer_english`
+  - `category`
+  - `difficulty`
 
-id,title,japanese,category,difficulty
+想定形式:
 
-- Only `japanese` is required.
-- If headers are missing, fallback to treating the first column as Japanese text.
-- Rows with empty Japanese text must be ignored.
+```csv
+id,title,japanese,answer_english,category,difficulty
+```
 
-### 4.3 Random prompt selection
+### 3.3 各列の扱い
 
-- Each round must choose one prompt randomly from the currently loaded dataset.
-- True non-repetition control is not required in MVP.
-- If only one prompt exists, that prompt may repeat every round.
+- `japanese`
+  - 読み上げ対象の日本文
+  - 空欄行は無視する
+- `id`
+  - 問題識別子
+  - 空欄の場合は実装側で補完してよい
+- `title`
+  - 問題表示用の短い見出し
+  - 空欄の場合は `問題1` のように補完してよい
+- `answer_english`
+  - 任意
+  - 回答後に表示できる教材用の模範英文
+  - 列なし、未定義、空欄はすべて「模範英文なし」として扱う
+- `category`
+  - 任意
+  - MVPではUI上で強く扱わない
+- `difficulty`
+  - 任意
+  - MVPではUI上で強く扱わない
 
-### 4.4 Speech playback
+### 3.4 後方互換
 
-- The selected Japanese sentence must be spoken using the browser's speech synthesis capability.
-- The app should prefer a Japanese-capable voice when available.
-- If multiple Japanese voices exist, selecting a reasonable default is sufficient for MVP.
-- The app must detect when playback has ended in order to start the timer.
-- The Japanese text must remain hidden while speech is playing.
+- `answer_english` がない既存CSVでも従来どおり動作すること
+- `answer_english` 列が存在しても空欄の行はエラーにしないこと
+- ヘッダーなしCSVでは先頭列を日本文として扱えること
 
-### 4.5 Countdown
+## 4. 問題選択と進捗
 
-- The countdown duration must be fixed at 60 seconds in MVP.
-- The countdown must start only after speech playback finishes.
-- The countdown should visibly update so the user can track remaining time.
-- The user does not need pause or resume controls in MVP unless implementation becomes trivial.
+- 新しい問題は未出題の問題からランダムに選ぶ
+- 進捗は「一度でも出題した問題数」とする
+- 前の問題に戻っても進捗は減らさない
+- すべて出題済みの場合は新しい問題を出さず、全問出題済みであることを表示する
+- 進捗リセットで出題済み履歴を消去できる
+- 初期CSVの進捗は `localStorage` に保存する
+- カスタムCSV本文は `localStorage` に保存しない
+- カスタムCSVの進捗はそのセッション中のみ保持できればよい
 
-### 4.6 Reveal
+## 5. 状態モデル
 
-- When the countdown reaches zero, the app must display the Japanese sentence used in the current round.
-- The reveal state should remain visible until the user starts the next round.
+- `idle`
+- `speaking`
+- `answering`
+- `finished`
+- `error`
 
-### 4.7 Round control
+状態遷移:
 
-- The user must be able to start a round manually.
-- After a round completes, the user must be able to start another random round.
-- Starting a new round should clear the previous reveal and reset timer-related state.
+- `idle` → `speaking`
+- `speaking` → `answering`
+- `answering` → `finished`
+- `finished` → `speaking`
 
-## 5. Non-Functional Requirements
+一時停止状態は `phase` とは別に管理する。
 
-### 5.1 Platform
+## 6. UI仕様
 
-- Must run as a web app in a modern browser.
-- Must not require server-side processing for MVP.
+### 6.1 読み上げと表示
 
-### 5.2 Usability
+- 日本文は読み上げ中に表示しない
+- 日本文は回答時間中にも表示しない
+- 日本文はカウントダウン終了後にのみ表示する
+- `title` は読み上げ前から表示してよい
 
-- The main interaction should be understandable with minimal UI.
-- The user should always know which phase they are in:
-  - ready
-  - speaking
-  - countdown
-  - revealed
+### 6.2 結果確認エリア
 
-### 5.3 Reliability
+- 回答後に「読み上げた日本文」を表示する
+- 「コピーする」ボタンで表示中の日本文のみをコピーできる
+- 「Google翻訳で確認」ボタンを表示する
+- Google翻訳は補助確認手段として扱い、正解そのものとしては扱わない
 
-- If speech synthesis is unavailable or fails, the app should present a clear error or fallback notice.
-- The timer should not start before speech playback ends.
+### 6.3 模範英文
 
-### 5.4 Privacy
+- `answer_english` がある場合のみ「模範英文を見る」ボタンを表示する
+- ボタン押下後に「模範英文」セクションを表示する
+- `answer_english` がない場合は「模範英文を見る」ボタンを表示しない
+- Google翻訳ボタンは `answer_english` の有無にかかわらず残す
 
-- User CSV data should remain local in MVP.
-- No network upload is required for core functionality.
+### 6.4 練習操作
 
-## 6. Suggested State Model
+- 初回は「出題開始」で開始する
+- 出題後は「次の問題」で未出題問題へ進める
+- 「同じ問題をもう一度」で現在の問題を最初から再読み上げする
+- 「前の問題」で出題履歴のひとつ前に戻る
+- 「一時停止」「再開」を使える
+- 進捗は `進捗：X / Y（残りZ問）` 形式で表示する
 
-- `idle`: dataset loaded, waiting to start
-- `speaking`: Japanese speech in progress
-- `countdown`: 60-second answer window running
-- `revealed`: original Japanese sentence shown
-- `error`: recoverable issue such as invalid CSV or unavailable speech synthesis
+### 6.5 問題データ説明
 
-## 7. Edge Cases
+- 問題データセクションでは、CSV例を簡潔に表示する
+- サンプルCSVをダウンロードできる導線を用意してよい
 
-- CSV file exists but contains no usable rows
-- CSV parsing succeeds but all target cells are blank
-- User starts a new round while speech is still active
-- Browser blocks or delays speech synthesis initialization
-- No Japanese voice is available
-- Speech ends unexpectedly early
+## 7. エラー・警告
 
-## 8. Acceptance Criteria
+- 読み込み可能な日本文が1件もないCSVはエラーにする
+- 音声読み上げが使えない場合はエラーを表示する
+- 日本文が300文字を超える場合は警告表示するが、読み込み自体は継続する
 
-The MVP is complete when all of the following are true:
+## 8. 受け入れ条件
 
-1. Opening the app with the bundled CSV allows an immediate practice round.
-2. The user can import a local CSV and use it for rounds.
-3. A random Japanese sentence is selected and spoken aloud.
-4. The Japanese sentence is not shown before the answer period ends.
-5. The 60-second countdown begins only after speech playback completes.
-6. When the timer reaches zero, the Japanese sentence is displayed.
-7. The user can start the next round without reloading the page.
+1. 初期CSVを読み込んですぐに練習を始められる
+2. カスタムCSVを読み込んで利用できる
+3. 日本文が読み上げ中と回答時間中に表示されない
+4. 読み上げ終了後に60秒カウントダウンが始まる
+5. 回答時間終了後に読み上げた日本文が表示される
+6. `answer_english` がある場合は模範英文を表示できる
+7. `answer_english` がない、または空欄でもエラーにならない
+8. Google翻訳ボタンを補助確認として使える
+9. 進捗が表示される
+10. 初期CSVの進捗がブラウザ内に保持される

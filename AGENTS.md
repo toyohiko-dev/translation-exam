@@ -1,85 +1,41 @@
 # AGENTS.md
 
-## Purpose
-- This repository is a personal interpretation practice web app.
-- The current phase is design-first. Do not start implementing the app until the design documents are agreed.
+## このファイルの役割
 
-## Product Goal
-- Load Japanese source sentences from CSV.
-- Pick one sentence at random.
-- Read the Japanese aloud so the user must interpret by listening rather than reading.
-- After speech ends, start a 60-second countdown.
-- When the answer time ends, reveal the original Japanese sentence.
+このファイルは、Codex がこのリポジトリで作業するときの行動ルールを定義する。
+仕様そのものはここに書かず、`docs/spec.md` を正本として参照する。
 
-## MVP Scope
-- CSV loading by the user
-- Initial bundled CSV loading
-- Random prompt selection
-- Japanese text-to-speech playback
-- 60-second countdown after playback completes
-- Show the Japanese sentence after the answer window ends
+## 基本ルール
 
-## Out of Scope
-- Recording
-- Speech recognition
-- Transcription
-- AI scoring
+- 仕様は `docs/spec.md` を参照する
+- CSV仕様、結果表示UI、サンプルCSVに関する変更を行う場合は、同じ作業で `docs/spec.md` も更新する
+- `AGENTS.md` と `docs/spec.md` が矛盾する場合、仕様については `docs/spec.md` を優先する
+- `overview.md` にはプロダクトの目的と用語のみを書く
+- `dev.md` には現在の実装状況のみを書く
+
+## 実装方針
+
+- 静的Webアプリ構成を維持する
+- 依存は増やしすぎず、ブラウザ標準APIを優先する
+- ローカル完結の構成を保つ
+
+## 変更時の注意
+
+- 文言やUIを勝手に変えない
+- 不要なリファクタリングをしない
+- 要件変更がある場合は、先にドキュメントを更新し、その後で実装を更新する
+
+## 対象外
+
+- 録音
+- 音声認識
+- 文字起こし
+- AI採点
 - Supabase
-- Login
-- Database persistence
+- ログイン
+- DB保存
 
-## CSV Format
-The app must support the following CSV structure:
+## 参照
 
-id,title,japanese,category,difficulty
-
-- Only `japanese` is required.
-- Other fields may be empty but must not break parsing.
-- The initial dataset is located at:
-  - `data/interpreter_practice_200_questions.csv`
-
-## App State Model
-The app must clearly manage the following states:
-
-- idle
-- speaking
-- answering
-- finished
-
-State transitions:
-- idle → speaking (on start)
-- speaking → answering (after speech ends)
-- answering → finished (after 60s)
-- finished → speaking (next question)
-
-## UI/UX Rules
-- Do NOT show the Japanese sentence during speaking or answering.
-- The title may be shown before playback.
-- The Japanese sentence may only be revealed in the finished state.
-- The countdown must be highly visible during answering.
-- The UI should work well on mobile and desktop.
-
-## File Structure
-The app must remain a simple static web app:
-
-- index.html
-- styles.css
-- script.js
-- data/
-- docs/
-
-Do NOT introduce frameworks (React, Next.js, etc.) in this phase.
-
-## Working Rules
-- Prioritize a simple local-first architecture.
-- Keep implementation dependency-light.
-- Favor browser-native APIs:
-  - SpeechSynthesis
-  - fetch
-  - basic CSV parsing
-
-## Deliverables For The Next Phase
-- Implement the app only after `docs/overview.md`, `docs/spec.md`, and `docs/dev.md` are accepted.
-- If requirements change:
-  - Update docs first
-  - Then update implementation
+- 仕様の正本: `docs/spec.md`
+- 初期CSV: `data/interpreter_practice_questions.csv`
