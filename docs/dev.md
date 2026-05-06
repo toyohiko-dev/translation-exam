@@ -8,6 +8,8 @@
 ## 現在の構成
 
 - 静的Webアプリ
+- `package.json` なし
+- npm 前提の開発構成ではない
 - ファイル構成
   - `index.html`
   - `styles.css`
@@ -39,6 +41,7 @@
 - 回答後の日本文表示
 - 模範英文がある場合の表示
 - Google翻訳を補助確認として開く操作
+- Google翻訳を開く直前の日本文コピー
 - 同じ問題の再読み上げ
 - 前の問題への移動
 - 一時停止 / 再開
@@ -59,6 +62,11 @@
 - `script.js` の `parseCsv` は、ヘッダーありCSVとヘッダーなしCSVの両方を扱う
 - 日本文列のヘッダーとして `japanese` / `ja` / `text` を受ける実装になっている
 - 300文字を超える日本文がある場合は警告表示するが、読み込み自体は止めない
+- Google翻訳ボタンは `window.open(url, "_blank", "noopener,noreferrer")` を使う
+- Google翻訳URLは `https://translate.google.com/?sl=ja&tl=en&text=ENCODED_TEXT&op=translate` 形式
+- 翻訳対象テキストは `appState.currentPrompt?.textJa` を優先し、空なら `revealedJapanese.textContent` を使う
+- Google翻訳を開く直前に `navigator.clipboard.writeText` で日本文コピーを試みる
+- クリップボードコピーに失敗しても Google翻訳起動は継続し、`console.warn` のみ出す
 
 ## 現在の状態管理
 
@@ -76,6 +84,21 @@
 - 音声認識は未実装
 - AI採点は未実装
 - バックエンド、DB、ログインは未実装
+- スマホ実機では、ブラウザや端末設定により Google翻訳アプリへ遷移する可能性がある
+
+## ローカル確認方法
+
+- `file://` 直開きではなく、静的ファイルを配信できるローカルサーバー経由で確認する
+- 例:
+  - VS Code の Live Server 拡張を使う
+  - 任意の簡易HTTPサーバーでこのディレクトリを配信する
+- `package.json` がないため、`npm run dev` や `npm run build` は前提にしない
+
+## 公開メモ
+
+- このプロジェクトは静的HTML/JS/CSS構成のため、Vercel へは静的サイトとして公開できる
+- 公開時にビルドコマンドは不要
+- ルートディレクトリの `index.html` を起点に、そのまま配信する前提
 
 ## 実装と照合して未確認の点
 

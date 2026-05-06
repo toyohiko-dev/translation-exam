@@ -120,8 +120,11 @@ id,title,japanese,answer_english,category,difficulty
 - 「Google翻訳で確認」ボタンを表示する
 - Google翻訳は補助確認手段として扱い、正解そのものとしては扱わない
 - Google翻訳ボタンは、Google翻訳の通常URLを新しいタブで開く
+- Google翻訳URLは `https://translate.google.com/?sl=ja&tl=en&text=ENCODED_TEXT&op=translate` 形式を使う
+- 翻訳対象テキストは現在の問題文の日本語を使う
 - Google翻訳を開く直前に、翻訳対象の日本文をクリップボードへコピーする
 - スマホ実機では、端末やブラウザの設定によってGoogle翻訳アプリへ遷移する可能性がある
+- スマホでGoogle翻訳が空欄になった場合でも、コピー済みの日本文を貼り付けて確認できるようにする
 
 ### 6.3 模範英文
 
